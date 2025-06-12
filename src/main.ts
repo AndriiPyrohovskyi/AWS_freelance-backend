@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
@@ -7,16 +8,25 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   app.enableCors({
-    origin: 'http://localhost:3000',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: ['http://localhost:3000', 'http://localhost:3005'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: false, // Дозволяємо невідомі поля
+    skipMissingProperties: false,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
+  }));
 
   const config = new DocumentBuilder()
-    .setTitle('AWS Lab API')
-    .setDescription('API для роботи з користувачами')
+    .setTitle('AWS Freelance Platform API')
+    .setDescription('API для платформи фрілансерів з розширеною аналітикою')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
